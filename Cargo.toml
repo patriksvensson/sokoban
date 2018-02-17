@@ -1,0 +1,7 @@
+[package]
+name = "sokoban"
+version = "0.1.0"
+authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
+
+[dependencies]
+glium = "*"
