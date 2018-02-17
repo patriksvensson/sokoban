@@ -17,7 +17,7 @@ pub struct Engine {
 }
 impl Engine {
     pub fn new() -> Self {
-        let mut events_loop = glutin::EventsLoop::new();
+        let events_loop = glutin::EventsLoop::new();
         let window = glium::glutin::WindowBuilder::new()
             .with_dimensions(640, 480)
             .with_title("Sokoban");
