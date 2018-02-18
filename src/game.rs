@@ -1,38 +1,54 @@
 use engine::*;
+
 use glium;
 use glium::{Surface};
+use glium::index::PrimitiveType;
 
 pub struct Game {
     program: glium::Program,
     vertex_buffer: glium::VertexBuffer<Vertex>,
-    indices: glium::index::NoIndices
+    index_buffer: glium::IndexBuffer<u16>
 }
 
 impl Game {
     pub fn new(engine: &mut Engine) -> Self {
-        implement_vertex!(Vertex, position);
 
-        let vertex1 = Vertex { position: [-0.5, -0.5] };
-        let vertex2 = Vertex { position: [ 0.0,  0.5] };
-        let vertex3 = Vertex { position: [ 0.5, -0.25] };
-        let shape = vec![vertex1, vertex2, vertex3];
+        // Build the vertex buffer for the quad.
+        let vertex_buffer = {
+            implement_vertex!(Vertex, position, color);
 
-        let vertex_buffer = glium::VertexBuffer::new(&engine.display, &shape).unwrap();
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+            glium::VertexBuffer::new(&engine.display,
+                &[
+                    Vertex { position: [-0.5, -0.5], color: [0.0, 1.0, 0.0] },
+                    Vertex { position: [ 0.5, -0.5], color: [0.0, 0.0, 1.0] },
+                    Vertex { position: [ 0.5,  0.5], color: [1.0, 0.0, 0.0] },
+                    Vertex { position: [-0.5,  0.5], color: [1.0, 1.0, 0.0] },
+                ]
+            ).unwrap()
+        };
+
+        // Build the index buffer.
+        let index_buffer = glium::IndexBuffer::new(&engine.display, PrimitiveType::TrianglesList,
+                                                &[0u16, 1, 2, 2, 3, 0]).unwrap();
+
 
         let vertex_shader_src = r#"
             #version 140
             in vec2 position;
+            in vec3 color;
+            out vec3 vColor;
             void main() {
                 gl_Position = vec4(position, 0.0, 1.0);
+                vColor = color;
             }
         "#;
 
         let fragment_shader_src = r#"
             #version 140
+            in vec3 vColor;
             out vec4 color;
             void main() {
-                color = vec4(1.0, 0.0, 0.0, 1.0);
+                color = vec4(vColor, 1.0);
             }
         "#;
 
@@ -41,7 +57,7 @@ impl Game {
         return Game {
             program,
             vertex_buffer,
-            indices
+            index_buffer
         }
     }
 }
@@ -57,7 +73,7 @@ impl GameApplication for Game
         target.clear_color(0.0, 0.0, 1.0, 1.0);
         target.draw(
             &self.vertex_buffer,
-            &self.indices,
+            &self.index_buffer,
             &self.program,
             &glium::uniforms::EmptyUniforms,
             &Default::default())
