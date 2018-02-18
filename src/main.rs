@@ -3,6 +3,7 @@ extern crate glium;
 
 mod engine;
 mod game;
+mod renderer;
 
 fn main() {
     let mut engine = engine::Engine::new();
