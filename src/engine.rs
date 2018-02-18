@@ -1,6 +1,7 @@
 extern crate glium;
 
-use self::glium::{glutin, Surface};
+use std::time::{Instant, Duration};
+use self::glium::{glutin};
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -8,13 +9,16 @@ pub struct Vertex {
 }
 
 pub trait GameApplication {
+    fn update(&mut self, dt: f64);
     fn draw(&mut self, target: &mut glium::Frame);
 }
 
 pub struct Engine {
     pub display: glium::Display,
-    events: glutin::EventsLoop
+    events: glutin::EventsLoop,
+    last_frame_time : Instant,
 }
+
 impl Engine {
     pub fn new() -> Self {
         let events_loop = glutin::EventsLoop::new();
@@ -27,18 +31,28 @@ impl Engine {
 
         return Engine {
             display,
-            events: events_loop
+            events: events_loop,
+            last_frame_time: Instant::now()
         }
     }
 
     pub fn run(&mut self, app: &mut GameApplication) {
         let mut closed = false;
         while !closed {
+
+            // Calculate the number of seconds since last frame.
+            let current_time = Instant::now();
+            let dt = duration_to_secs(current_time - self.last_frame_time);
+
+            // Update
+            app.update(dt);
+
+            // Draw
             let mut target = self.display.draw();
-            target.clear_color(0.0, 0.0, 1.0, 1.0);
             app.draw(&mut target);
             target.finish().unwrap();
 
+            // Process events.
             self.events.poll_events(|event| {
                 match event {
                     glutin::Event::WindowEvent { event, .. } => match event {
@@ -50,4 +64,8 @@ impl Engine {
             });
         }
     }
+}
+
+fn duration_to_secs(dur: Duration) -> f64 {
+    dur.as_secs() as f64 + dur.subsec_nanos() as f64 / 1_000_000_000.0
 }

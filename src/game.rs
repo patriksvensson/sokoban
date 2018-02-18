@@ -48,8 +48,13 @@ impl Game {
 
 impl GameApplication for Game 
 {
+    fn update(&mut self, _dt: f64) {
+
+    }
+
     fn draw(&mut self, target: &mut glium::Frame) 
     {
+        target.clear_color(0.0, 0.0, 1.0, 1.0);
         target.draw(
             &self.vertex_buffer,
             &self.indices,
