@@ -7,17 +7,36 @@ use glium::index::PrimitiveType;
 pub struct Renderer {
     program: glium::Program,
     vertex_buffer: glium::VertexBuffer<Vertex>,
-    index_buffer: glium::IndexBuffer<u16>
+    index_buffer: glium::IndexBuffer<u16>,
+    window_width: u32,
+    window_height: u32
+}
+
+pub struct Rect {
+    pub x : f32,
+    pub y : f32,
+    pub w : f32,
+    pub h : f32,
 }
 
 impl Renderer {
-    pub fn draw_quad(&mut self, target: &mut glium::Frame) 
+    pub fn draw_quad(&mut self, target: &mut glium::Frame, rect: Rect) 
     {
+        let uniforms = uniform! {
+            matrix: [
+                [2.0 * rect.w /self.window_width as f32, 0.0, 0.0, -1.0 + 2.0 * rect.x / self.window_width as f32],
+                [0.0, -2.0*rect.h / self.window_height as f32, 0.0, 1.0 - 2.0 * rect.y / self.window_height as f32],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0f32]
+            ]
+        };
+
+
         target.draw(
             &self.vertex_buffer,
             &self.index_buffer,
             &self.program,
-            &glium::uniforms::EmptyUniforms,
+            &uniforms,
             &Default::default())
                 .unwrap();
     }
@@ -46,11 +65,12 @@ pub fn new(engine: &mut Engine) -> Renderer {
 
     let vertex_shader_src = r#"
         #version 140
+        uniform mat4 matrix;
         in vec2 position;
         in vec3 color;
         out vec3 vColor;
         void main() {
-            gl_Position = vec4(position, 0.0, 1.0);
+            gl_Position = vec4(position, 0.0, 1.0) * matrix;
             vColor = color;
         }
     "#;
@@ -69,6 +89,8 @@ pub fn new(engine: &mut Engine) -> Renderer {
     return Renderer {
         program,
         vertex_buffer,
-        index_buffer
+        index_buffer,
+        window_width: engine.window_width,
+        window_height: engine.window_height
     }
 }

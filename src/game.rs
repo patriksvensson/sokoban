@@ -24,7 +24,18 @@ impl GameApplication for Game
 
     fn draw(&mut self, target: &mut glium::Frame) 
     {
-        // TODO: Add coordinates and size of quad.
-        self.renderer.draw_quad(target);
+        self.renderer.draw_quad(target, renderer::Rect {
+            x: 32.0,
+            y: 32.0,
+            w: 32.0,
+            h: 32.0
+        });
+
+        self.renderer.draw_quad(target, renderer::Rect {
+            x: 128.0,
+            y: 128.0,
+            w: 64.0,
+            h: 64.0
+        });
     }
 }

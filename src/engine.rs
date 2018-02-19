@@ -16,6 +16,8 @@ pub trait GameApplication {
 
 pub struct Engine {
     pub display: glium::Display,
+    pub window_width: u32,
+    pub window_height: u32,
     events: glutin::EventsLoop,
     last_frame_time : Instant,
 }
@@ -32,6 +34,8 @@ impl Engine {
 
         return Engine {
             display,
+            window_width: 640,
+            window_height: 480,
             events: events_loop,
             last_frame_time: Instant::now()
         }
