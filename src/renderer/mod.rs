@@ -32,7 +32,7 @@ impl Renderer {
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0f32]
             ],
-            colorz: [color.0, color.1, color.2, color.3]
+            color: [color.0, color.1, color.2, color.3]
         };
 
         target.draw(
@@ -48,14 +48,14 @@ impl Renderer {
 pub fn new(engine: &mut Engine) -> Renderer {
     // Build the vertex buffer for the quad.
     let vertex_buffer = {
-        implement_vertex!(Vertex, position, color);
+        implement_vertex!(Vertex, position);
 
         glium::VertexBuffer::new(&engine.display,
             &[
-                Vertex { position: [0.0, 0.0], color: [0.0, 1.0, 0.0] },
-                Vertex { position: [1.0, 0.0], color: [0.0, 0.0, 1.0] },
-                Vertex { position: [1.0, 1.0], color: [1.0, 0.0, 0.0] },
-                Vertex { position: [0.0, 1.0], color: [1.0, 1.0, 0.0] },
+                Vertex { position: [0.0, 0.0] },
+                Vertex { position: [1.0, 0.0] },
+                Vertex { position: [1.0, 1.0] },
+                Vertex { position: [0.0, 1.0] },
             ]
         ).unwrap()
     };
@@ -69,13 +69,12 @@ pub fn new(engine: &mut Engine) -> Renderer {
     let vertex_shader_src = r#"
         #version 140
         uniform mat4 matrix;
-        uniform vec4 colorz;
+        uniform vec4 color;
         in vec2 position;
-        in vec3 color;
         out vec4 vColor;
         void main() {
             gl_Position = vec4(position, 0.0, 1.0) * matrix;
-            vColor = colorz;
+            vColor = color;
         }
     "#;
 
