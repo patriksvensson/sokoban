@@ -19,8 +19,11 @@ pub struct Rect {
     pub h : f32,
 }
 
+#[derive(Copy, Clone)]
+pub struct Color(pub f32, pub f32, pub f32, pub f32);
+
 impl Renderer {
-    pub fn draw_quad(&mut self, target: &mut glium::Frame, rect: Rect) 
+    pub fn draw_quad(&mut self, target: &mut glium::Frame, rect: Rect, color: Color) 
     {
         let uniforms = uniform! {
             matrix: [
@@ -28,7 +31,8 @@ impl Renderer {
                 [0.0, -2.0 * rect.h / self.window_height as f32, 0.0, 1.0 - (2.0 * rect.y / self.window_height as f32)],
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0f32]
-            ]
+            ],
+            colorz: [color.0, color.1, color.2, color.3]
         };
 
         target.draw(
@@ -65,21 +69,22 @@ pub fn new(engine: &mut Engine) -> Renderer {
     let vertex_shader_src = r#"
         #version 140
         uniform mat4 matrix;
+        uniform vec4 colorz;
         in vec2 position;
         in vec3 color;
-        out vec3 vColor;
+        out vec4 vColor;
         void main() {
             gl_Position = vec4(position, 0.0, 1.0) * matrix;
-            vColor = color;
+            vColor = colorz;
         }
     "#;
 
     let fragment_shader_src = r#"
         #version 140
-        in vec3 vColor;
+        in vec4 vColor;
         out vec4 color;
         void main() {
-            color = vec4(vColor, 1.0);
+            color = vColor;
         }
     "#;
 
