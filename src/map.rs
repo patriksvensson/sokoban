@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
 use glium;
@@ -5,17 +6,13 @@ use renderer;
 use renderer::*;
 
 pub struct Map {
+    pub level: u8,
     pub tiles: [[Tile; 15]; 20],
-    pub start_position: PlayerPosition,
-    pub boxes: Vec<Box<BoxObj>>
+    pub start_position: Position,
+    pub boxes: Vec<Position>
 }
 
-pub struct BoxObj {
-    pub x: u8,
-    pub y: u8
-}
-
-pub type PlayerPosition = (u8, u8);
+pub type Position = (u8, u8);
 
 impl Map {
     pub fn draw(&self, target: &mut glium::Frame, renderer: &mut Renderer) {
@@ -43,15 +40,15 @@ impl Map {
         // Draw all boxes.
         for item in self.boxes.iter() {
             // Get the box color?
-            let color = if self.tiles[item.x as usize][item.y as usize] == Tile::Placeholder {
+            let color = if self.tiles[item.0 as usize][item.1 as usize] == Tile::Placeholder {
                 Color(0.0, 1.0, 0.0, 1.0)
             } else {
                 Color(1.0, 0.0, 0.0, 1.0)
             };
 
             renderer.draw_quad(target, renderer::Rect {
-                x: item.x as f32 * 32.0,
-                y: item.y as f32 * 32.0,
+                x: item.0 as f32 * 32.0,
+                y: item.1 as f32 * 32.0,
                 w: 32.0,
                 h: 32.0
             }, color);
@@ -67,7 +64,13 @@ pub enum Tile {
     Placeholder
 }
 
-pub fn load(filename: &str) -> Map {
+pub fn load(level: u8) -> Map {
+    // Create the level filename.
+    let filename = format!("data/{}.level", level);
+    if !Path::new(&filename).exists() {
+        // Level does not exist. Start over.
+        return load(1);
+    }
 
     // Read the level file.
     let mut file = File::open(filename).expect("Level file not found.");
@@ -77,8 +80,8 @@ pub fn load(filename: &str) -> Map {
 
     // Declare the array holding the level information.
     let mut tiles = [[Tile::Nothing; 15]; 20];
-    let mut start_position : PlayerPosition = (0,0);
-    let mut boxes : Vec<Box<BoxObj>> = Vec::new();
+    let mut start_position : Position = (0,0);
+    let mut boxes : Vec<Position> = Vec::new();
 
     // Process the map.
     let mut x = 0;
@@ -103,7 +106,8 @@ pub fn load(filename: &str) -> Map {
         } else if c == 'o' {
             tiles[x][y] = Tile::Placeholder;
         } else if c == '$' {
-            boxes.push(Box::new(BoxObj {x: x as u8, y: y as u8}));
+            tiles[x][y] = Tile::Floor;
+            boxes.push((x as u8, y as u8));
         } else if c == '@' {
             // Start position.
             tiles[x][y] = Tile::Floor;
@@ -114,6 +118,7 @@ pub fn load(filename: &str) -> Map {
     }
 
     return Map {
+        level,
         tiles,
         start_position,
         boxes

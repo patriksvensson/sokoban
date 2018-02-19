@@ -5,6 +5,7 @@ mod engine;
 mod game;
 mod map;
 mod renderer;
+mod utils;
 
 fn main() {
     let mut engine = engine::Engine::new();

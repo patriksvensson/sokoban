@@ -1,7 +1,9 @@
 extern crate glium;
 
-use std::time::{Instant, Duration};
+use std::time::{Instant};
 use self::glium::{glutin};
+
+use utils;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -9,7 +11,7 @@ pub struct Vertex {
 }
 
 pub trait GameApplication {
-    fn update(&mut self, dt: f64);
+    fn update(&mut self, dt: f64, keys : [bool; 100]);
     fn draw(&mut self, target: &mut glium::Frame);
 }
 
@@ -42,34 +44,39 @@ impl Engine {
 
     pub fn run(&mut self, app: &mut GameApplication) {
         let mut closed = false;
+        let mut keys : [bool; 100] = [false; 100];
+
         while !closed {
-
             // Calculate the number of seconds since last frame.
-            let current_time = Instant::now();
-            let dt = duration_to_secs(current_time - self.last_frame_time);
-
-            // Update
-            app.update(dt);
-
-            // Draw
-            let mut target = self.display.draw();
-            app.draw(&mut target);
-            target.finish().unwrap();
+            let dt = utils::duration_to_secs(Instant::now() - self.last_frame_time);
 
             // Process events.
             self.events.poll_events(|event| {
                 match event {
                     glutin::Event::WindowEvent { event, .. } => match event {
                         glutin::WindowEvent::Closed => closed = true,
+                        glutin::WindowEvent::KeyboardInput {device_id: _, input} =>{
+                            match input.state {
+                                glutin::ElementState::Pressed =>
+                                    keys[input.scancode as usize] = true,
+                                glutin::ElementState::Released =>
+                                    keys[input.scancode as usize] = false,
+                            }
+                        },
                         _ => ()
                     },
                     _ => (),
                 }
             });
+
+            // Update
+            app.update(dt, keys);
+            self.last_frame_time = Instant::now();
+
+            // Draw
+            let mut target = self.display.draw();
+            app.draw(&mut target);
+            target.finish().unwrap();
         }
     }
-}
-
-fn duration_to_secs(dur: Duration) -> f64 {
-    dur.as_secs() as f64 + dur.subsec_nanos() as f64 / 1_000_000_000.0
 }
