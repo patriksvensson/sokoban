@@ -43,10 +43,9 @@ impl Engine {
     }
 
     pub fn run(&mut self, app: &mut GameApplication) {
-        let mut closed = false;
         let mut keys : [bool; 100] = [false; 100];
 
-        while !closed {
+        loop {
             // Calculate the number of seconds since last frame.
             let dt = utils::duration_to_secs(Instant::now() - self.last_frame_time);
 
@@ -54,7 +53,7 @@ impl Engine {
             self.events.poll_events(|event| {
                 match event {
                     glutin::Event::WindowEvent { event, .. } => match event {
-                        glutin::WindowEvent::Closed => closed = true,
+                        glutin::WindowEvent::Closed => return,
                         glutin::WindowEvent::KeyboardInput {device_id: _, input} =>{
                             match input.state {
                                 glutin::ElementState::Pressed =>

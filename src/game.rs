@@ -11,6 +11,7 @@ const KEY_UP : usize = 72;
 const KEY_DOWN : usize = 80;
 const KEY_LEFT : usize = 75;
 const KEY_RIGHT : usize = 77;
+const KEY_R : usize = 19;
 
 pub struct Game {
     renderer: Renderer,
@@ -63,6 +64,12 @@ impl GameApplication for Game
         if get_play_state(&self.map) == State::Won {
             // Load the next level.
             self.map = map::load(self.map.level + 1);
+            self.position = self.map.start_position;
+        }
+
+        // Player wants to reload the level?
+        if keys[KEY_R] {
+            self.map = map::load(self.map.level);
             self.position = self.map.start_position;
         }
 
